@@ -1,43 +1,32 @@
-name: 🚀 Deploy Laravel
+# name: 🚀 Deploy Laravel
 
-on:
-  push:
-    branches:
-      - develop
+# on:
+#   push:
+#     branches:
+#       - develop
 
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
+# jobs:
+#   deploy:
+#     runs-on: ubuntu-latest
 
-    steps:
-      - name: Ejecutar deploy por SSH
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.SERVER_IP }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SSH_KEY }}
-          script: |
-            cd /var/www/api-base
+#     steps:
+#       - name: Ejecutar deploy por SSH (Docker, Amazon Lightsail)
+#         uses: appleboy/ssh-action@v1.0.0
+#         with:
+#           host: ${{ secrets.SERVER_IP }}
+#           username: ${{ secrets.SERVER_USER }}
+#           key: ${{ secrets.SSH_KEY }}
+#           script: |
+#             cd /opt/api-base
 
-            echo "Activando mantenimiento"
-            php artisan down || true
+#             echo "Actualizando código"
+#             git pull origin develop
 
-            echo "Actualizando código"
-            git pull origin develop
+#             echo "Reconstruyendo imagen"
+#             docker compose build
 
-            echo "Instalando dependencias"
-            composer install --no-dev --optimize-autoloader
+#             echo "Recreando contenedores"
+#             docker compose up -d
 
-            #echo "Migraciones"
-            #php artisan migrate --force
-
-            echo "Optimizando"
-            php artisan config:cache
-            php artisan route:cache
-            php artisan view:cache
-
-            echo "Permisos"
-            chown -R www-data:www-data storage bootstrap/cache
-
-            echo "Activando app"
-            php artisan up
+#             echo "entrypoint.sh ya corrió migrate --force + config/route/view:cache dentro del contenedor"
+#             docker compose ps

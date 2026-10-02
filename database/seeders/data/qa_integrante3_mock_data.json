@@ -1,0 +1,61 @@
+{
+  "_nota": "Datos sinteticos QA para el modulo de Transferencias Externas y Tickets (Integrante 3). Ninguno de estos valores proviene de produccion. No incluye una TransferenciaExterna previa con codigo_confirmacion=TRX-URB-0001 ni una asignacion activa en el ticket 100 a proposito: esos estados los crea el propio TC-TRF-001 y TC-TCK-003 al ejecutarse primero; TC-TRF-004, TC-TCK-004 y TC-TCK-005 dependen de correr despues.",
+  "clientes": [
+    {
+      "id": 5,
+      "nombres": "Cliente",
+      "apellidos": "Demo QA",
+      "dpi": "1234567890101",
+      "direccion": "Zona 1, Ciudad QA",
+      "telefono": "12345678",
+      "correo_electronico": "cliente.demo.qa@example.test",
+      "estado": true
+    }
+  ],
+  "usuarios": [
+    {"id": 8, "name": "Agente QA Uno", "email": "agente.uno.qa@example.test", "password": "Password123!", "estado": true, "rol": "servicio_al_cliente"},
+    {"id": 9, "name": "Agente QA Dos", "email": "agente.dos.qa@example.test", "password": "Password123!", "estado": true, "rol": "servicio_al_cliente"},
+    {"id": 50, "name": "Usuario Banco QA", "email": "usuario.banco.qa@example.test", "password": "Password123!", "estado": true, "rol": "banco"}
+  ],
+  "cuentas": [
+    {"id": 10, "id_cliente": 5, "numero_cuenta": "1000000010", "tipo_cuenta": "ahorro", "moneda": "Q", "saldo": 500.00, "saldo_disponible": 500.00, "estado": true},
+    {"id": 11, "id_cliente": 5, "numero_cuenta": "1000000011", "tipo_cuenta": "ahorro", "moneda": "$", "saldo": 0.00, "saldo_disponible": 0.00, "estado": true},
+    {"id": 12, "id_cliente": 5, "numero_cuenta": "1000000012", "tipo_cuenta": "ahorro", "moneda": "Q", "saldo": 300.00, "saldo_disponible": 300.00, "estado": false},
+    {"id": 20, "id_cliente": 5, "numero_cuenta": "1000000020", "tipo_cuenta": "monetaria", "moneda": "Q", "saldo": 1000.00, "saldo_disponible": 1000.00, "estado": true},
+    {"id": 21, "id_cliente": 5, "numero_cuenta": "1000000021", "tipo_cuenta": "monetaria", "moneda": "Q", "saldo": 1000.00, "saldo_disponible": 1000.00, "estado": true},
+    {"id": 22, "id_cliente": 5, "numero_cuenta": "1000000022", "tipo_cuenta": "monetaria", "moneda": "Q", "saldo": 500.00, "saldo_disponible": 500.00, "estado": true},
+    {"id": 23, "id_cliente": 5, "numero_cuenta": "1000000023", "tipo_cuenta": "monetaria", "moneda": "$", "saldo": 200.00, "saldo_disponible": 200.00, "estado": true},
+    {"id": 24, "id_cliente": 5, "numero_cuenta": "1000000024", "tipo_cuenta": "monetaria", "moneda": "Q", "saldo": 200.00, "saldo_disponible": 200.00, "estado": true}
+  ],
+  "tickets": [
+    {"id_ticket": 99, "codigo_ticket": "DB-99", "id_cliente": 5, "id_tipo_ticket": "consulta", "id_estado_ticket": "abierto", "asunto": "Ticket previo para calcular correlativo", "canal_origen": "web", "creado_por": 8},
+    {"id_ticket": 100, "codigo_ticket": "DB-100", "id_cliente": 5, "id_tipo_ticket": "reclamo", "id_estado_ticket": "abierto", "asunto": "Ticket base para asignacion", "canal_origen": "telefono", "creado_por": 8},
+    {"id_ticket": 101, "codigo_ticket": "DB-101", "id_cliente": 5, "id_tipo_ticket": "solicitud", "id_estado_ticket": "cerrado", "asunto": "Ticket cerrado para prueba de transicion", "canal_origen": "correo", "creado_por": 8, "fecha_cierre": "2026-09-20 10:00:00"},
+    {"id_ticket": 102, "codigo_ticket": "DB-102", "id_cliente": 5, "id_tipo_ticket": "soporte", "id_estado_ticket": "abierto", "asunto": "Ticket para prueba de mismo estado", "canal_origen": "presencial", "creado_por": 8},
+    {"id_ticket": 103, "codigo_ticket": "DB-103", "id_cliente": 5, "id_tipo_ticket": "reclamo", "id_estado_ticket": "asignado", "asunto": "Ticket para prueba de cierre", "canal_origen": "web", "creado_por": 8},
+    {"id_ticket": 50, "codigo_ticket": "DB-50", "id_cliente": 5, "id_tipo_ticket": "reclamo", "id_estado_ticket": "abierto", "asunto": "Cobro duplicado", "canal_origen": "web", "creado_por": 8},
+    {"id_ticket": 51, "codigo_ticket": "DB-51", "id_cliente": 5, "id_tipo_ticket": "consulta", "id_estado_ticket": "resuelto", "asunto": "Consulta de saldo", "canal_origen": "telefono", "creado_por": 8},
+    {"id_ticket": 52, "codigo_ticket": "DB-52", "id_cliente": 5, "id_tipo_ticket": "solicitud", "id_estado_ticket": "pendiente", "asunto": "Solicitud de tarjeta", "canal_origen": "correo", "creado_por": 8},
+    {"id_ticket": 53, "codigo_ticket": "DB-53", "id_cliente": 5, "id_tipo_ticket": "soporte", "id_estado_ticket": "en proceso", "asunto": "Problema de acceso", "canal_origen": "presencial", "creado_por": 8},
+    {"id_ticket": 54, "codigo_ticket": "DB-54", "id_cliente": 5, "id_tipo_ticket": "reclamo", "id_estado_ticket": "cerrado", "asunto": "Cobro no reconocido", "canal_origen": "web", "creado_por": 8}
+  ],
+  "asignaciones_ticket": [
+    {"id_ticket": 103, "id_usuario_asignado": 8, "id_usuario_asigna": 9, "estado_asignacion": "activa", "motivo_asignacion": "Asignacion previa para prueba de cierre"}
+  ],
+  "mocks_bancos_externos": {
+    "_nota": "Esto NO lo carga el seeder de base de datos: es referencia para configurar Http::fake() en las pruebas Pest, ya que son respuestas HTTP salientes, no filas de tablas.",
+    "urbank": {
+      "GET /public/cuentas-disponibles": {
+        "cuentas": [
+          {"numero_cuenta": "1234567890", "id_cuenta": 501, "titular": "Cuenta QA URBANK 1"},
+          {"numero_cuenta": "9999999999", "id_cuenta": 502, "titular": "Cuenta QA URBANK 2"}
+        ],
+        "_nota": "0000000000 y 5555555555 se dejan fuera a proposito (TC-TRF-005 y TC-TRF-008)."
+      },
+      "POST /transacciones/transferencia-entrante": {
+        "por_defecto": {"http_status": 200, "body": {"ok": true, "confirmacion": "URB-OK-0001"}},
+        "cuenta_externa=5555555555": {"http_status": 200, "body": {"ok": false, "message": "Fondos insuficientes en la cuenta destino."}}
+      }
+    }
+  }
+}
