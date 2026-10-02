@@ -114,6 +114,28 @@ docker compose ps
 
 Debes ver `mysql_db` y `mongo_db` en estado `healthy`, y `api_base_app` en `running`.
 
+## 11. Conectarte con TablePlus (opcional, para inspeccionar datos)
+
+MySQL y Mongo no publican sus puertos al host (`docker-compose.yml` solo los bindea a `127.0.0.1` del servidor, nunca a la IP pública) — por diseño no son alcanzables desde internet. La forma de entrar con un cliente gráfico es por túnel SSH, que TablePlus hace solo con un par de campos, sin terminal aparte.
+
+**MySQL:**
+1. Nueva conexión → **MySQL**.
+2. Pestaña **Over SSH**: marcar "Over SSH", host `<IP_ESTATICA>`, usuario `ubuntu`, y la misma llave privada (`.pem`) que usas para conectarte por SSH.
+3. Pestaña de conexión normal: Host `127.0.0.1`, Puerto `3306`, Usuario `erp_app` (o `root` si necesitas acceso total), Password el `DB_PASSWORD` (o `DB_ROOT_PASSWORD`) de tu `.env`, Database `ERPTI`.
+4. Connect.
+
+**MongoDB:**
+1. Nueva conexión → **MongoDB**.
+2. Misma pestaña **Over SSH** que arriba.
+3. Host `127.0.0.1`, Puerto `27017`, Usuario `erp_mongo_admin`, Password el `MONGO_ROOT_PASSWORD` de tu `.env`, Authentication Database `admin`.
+4. Connect.
+
+Si cambiaste `docker-compose.yml` para agregar estos puertos *después* de haber corrido `docker compose up -d` una vez, aplica el cambio con:
+```bash
+git pull origin develop   # o sube el archivo actualizado
+docker compose up -d      # recrea solo mysql y mongo, sin tocar sus datos
+```
+
 ---
 
 ## Checklist de humo (para el Formato 2 — Informe de Alistamiento)

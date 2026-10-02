@@ -25,6 +25,11 @@ services:
       MYSQL_DATABASE: ${DB_DATABASE}
       MYSQL_USER: ${DB_USERNAME}
       MYSQL_PASSWORD: ${DB_PASSWORD}
+    ports:
+      # Solo loopback del host -- no es alcanzable desde internet, ni hace
+      # falta abrir el puerto en el firewall de Lightsail. Sirve para
+      # conectar un cliente tipo TablePlus por tunel SSH (ver DEPLOYMENT.md).
+      - "127.0.0.1:3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
     healthcheck:
@@ -40,6 +45,9 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+    ports:
+      # Igual que mysql: solo loopback del host, para TablePlus por SSH.
+      - "127.0.0.1:27017:27017"
     volumes:
       - mongo_data:/data/db
     healthcheck:
