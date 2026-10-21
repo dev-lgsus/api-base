@@ -22,7 +22,11 @@ class UpdateProfileRequest extends FormRequest
         return [
             'name'   => ['sometimes', 'string', 'max:255'],
             'email'  => ['sometimes', 'string', 'email', 'max:255', Rule::unique('users')->ignore($id)],
-            'estado' => ['sometimes', 'boolean'],
+            // (BUG-06) 'estado' ya no es editable desde el perfil propio: sólo el
+            // administrador lo cambia por PUT /users/{id}.
+            // (BUG-17) Cambio de contraseña propio, con la contraseña actual y confirmación.
+            'password'         => ['sometimes', 'string', 'min:8', 'confirmed'],
+            'current_password' => ['required_with:password', 'string'],
         ];
     }
 

@@ -10,14 +10,17 @@ it('registra un usuario correctamente', function () {
         'password_confirmation' => '12345678',
     ]);
 
+    // Entrega 3 (BUG-01): el registro público deja la cuenta inactiva, sin rol y sin token.
     $res->assertStatus(201)
         ->assertJsonStructure([
             'status', 'message',
-            'data' => ['user' => ['id', 'name', 'email'], 'token'],
+            'data' => ['user' => ['id', 'name', 'email', 'estado']],
         ])
+        ->assertJsonMissingPath('data.token')
+        ->assertJsonPath('data.user.estado', false)
         ->assertJson(['status' => true]);
 
-    $this->assertDatabaseHas('users', ['email' => 'juan@test.com']);
+    $this->assertDatabaseHas('users', ['email' => 'juan@test.com', 'estado' => false]);
 });
 
 it('falla si el email ya existe', function () {

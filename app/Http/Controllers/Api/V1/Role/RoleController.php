@@ -8,9 +8,18 @@ use App\Http\Resources\Api\V1\RoleResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Models\Role;
+use App\Models\User;
+use Illuminate\Support\Facades\DB;
+use Spatie\Permission\Guard;
 
 class RoleController extends Controller
 {
+    /**
+     * Roles que routes/api.php y el portal referencian por nombre. Renombrarlos o
+     * eliminarlos rompe la autorización (BUG-09), así que quedan protegidos.
+     */
+    private const ROLES_DEL_SISTEMA = ['admin', 'gerente', 'cajero', 'servicio_al_cliente', 'banco'];
+
     public function index(): JsonResponse
     {
         $roles = Role::with('permissions')->paginate(15);
@@ -55,7 +64,10 @@ class RoleController extends Controller
             'name' => ['required', 'string', 'max:255', 'unique:roles,name'],
         ]);
 
-        $role = Role::create(['name' => $validated['name'], 'guard_name' => 'sanctum']);
+        // (BUG-08) Antes se escribía guard_name='sanctum' y assignRole (guard 'web') no lo
+        // encontraba. Se usa el guard que Spatie resuelve para el modelo User ('web'), no
+        // auth.defaults.guard, que dentro de una petición con Sanctum vale 'sanctum'.
+        $role = Role::create(['name' => $validated['name'], 'guard_name' => Guard::getDefaultName(User::class)]);
 
         return ApiResponse::success(
             data: new RoleResource($role->load('permissions')),
@@ -67,6 +79,13 @@ class RoleController extends Controller
     public function update(Request $request, int $id): JsonResponse
     {
         $role = Role::findOrFail($id);
+
+        if (in_array($role->name, self::ROLES_DEL_SISTEMA, true)) {
+            return ApiResponse::error(
+                message: "El rol {$role->name} es un rol del sistema y no puede renombrarse.",
+                status: 422
+            );
+        }
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255', 'unique:roles,name,' . $role->id],
@@ -84,7 +103,20 @@ class RoleController extends Controller
     {
         $role = Role::findOrFail($id);
 
-        if ($role->users()->count() > 0) {
+        if (in_array($role->name, self::ROLES_DEL_SISTEMA, true)) {
+            return ApiResponse::error(
+                message: "El rol {$role->name} es un rol del sistema y no puede eliminarse.",
+                status: 422
+            );
+        }
+
+        // (BUG-11) Se cuenta directamente en model_has_roles: la relación users() arrastra
+        // el SoftDeletes de User y no veía a los usuarios eliminados lógicamente.
+        $asignados = DB::table(config('permission.table_names.model_has_roles'))
+            ->where(config('permission.column_names.role_pivot_key') ?? 'role_id', $role->id)
+            ->count();
+
+        if ($asignados > 0) {
             return ApiResponse::error(
                 message: 'No se puede eliminar el rol porque tiene usuarios asignados.',
                 status: 409

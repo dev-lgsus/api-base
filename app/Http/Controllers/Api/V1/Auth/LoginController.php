@@ -103,8 +103,11 @@ class LoginController extends Controller
 
         $user->tokens()->where('name', 'auth_token')->delete();
 
+        // (BUG-13) El token lleva la marca de inicio de la sesión para que la renovación
+        // pueda aplicar una duración máxima absoluta (config sanctum.max_session).
         $token = $user->createToken(
             name: 'auth_token',
+            abilities: ['*', 'sesion_inicio:' . now()->timestamp],
             expiresAt: now()->addMinutes(config('sanctum.expiration'))
         );
 

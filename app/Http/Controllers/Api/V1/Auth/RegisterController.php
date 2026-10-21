@@ -16,24 +16,24 @@ class RegisterController extends Controller
      */
     public function __invoke(RegisterRequest $request): JsonResponse
     {
+        // (BUG-01) El registro público ya no crea una cuenta operativa: el usuario nace
+        // INACTIVO y SIN ROL, sin token, y queda pendiente de que un administrador le asigne
+        // rol y lo active desde el mantenimiento de usuarios (opción "pendiente de aprobación"
+        // de Q-02). Así un desconocido no obtiene ninguna sesión desde este endpoint.
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
-            'password' => bcrypt($request->password),
+            'password' => $request->password,
+            'estado' => false,
         ]);
-        // TODO: Ver la forma de como asignar el rol
 
-        $token = $user->createToken(
-            name: 'auth_token',
-            expiresAt: now()->addMinutes(config('sanctum.expiration', 300))
-        );
-
+        // (BUG-19) Se recarga el modelo para devolver el estado persistido, no un null.
+        // (BUG-15) Ya no se devuelve el NewAccessToken completo: el registro no emite token.
         return ApiResponse::success(
             data: [
-                'user' => new UserResource($user),
-                'token' => $token,
+                'user' => new UserResource($user->fresh()),
             ],
-            message: 'Usuario registrado exitosamente.',
+            message: 'Registro recibido. La cuenta queda inactiva hasta que un administrador le asigne un rol y la active.',
             status: 201
         );
     }

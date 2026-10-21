@@ -33,8 +33,16 @@ class AppServiceProvider extends ServiceProvider
             return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
         });
 
+        // (BUG-14) Antes el límite era sólo por IP: el ataque seguía desde otra IP y una
+        // sucursal detrás de NAT quedaba bloqueada por un tercero. Ahora la cuenta atacada
+        // se bloquea por sí misma (10/min) y la IP conserva un tope más amplio (30/min).
         RateLimiter::for('auth', function (Request $request) {
-            return Limit::perMinute(10)->by($request->ip());
+            $cuenta = strtolower((string) $request->input('email'));
+
+            return [
+                Limit::perMinute(10)->by('cuenta:' . ($cuenta ?: $request->ip())),
+                Limit::perMinute(30)->by('ip:' . $request->ip()),
+            ];
         });
 
         // Auditoría: listeners de eventos de autenticación.

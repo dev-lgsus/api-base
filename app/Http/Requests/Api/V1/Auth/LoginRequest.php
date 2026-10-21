@@ -35,7 +35,8 @@ class LoginRequest extends FormRequest
         throw new HttpResponseException(
             ApiResponse::error(
                 message: 'Error de validación.',
-                errors: $validator->errors(),
+                // (BUG-12) ApiResponse::error espera un array; un MessageBag provocaba HTTP 500.
+                errors: $validator->errors()->toArray(),
                 status: 422
             )
         );

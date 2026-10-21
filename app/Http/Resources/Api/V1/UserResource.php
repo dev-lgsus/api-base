@@ -19,9 +19,8 @@ class UserResource extends JsonResource
             'name' => $this->name,
             'email' => $this->email,
             'estado' => $this->estado,
-            'roles' => $this->roles->map(function($r) {
-                return ['id' => $r->id, 'name' => $r->name];
-            })->first(),
+            // (BUG-16) Antes se devolvía sólo el primer rol (->first()). Ahora la lista completa.
+            'roles' => $this->roles->map(fn ($r) => ['id' => $r->id, 'name' => $r->name])->values(),
             'permissions' => $this->getAllPermissions()->pluck('name'),
             'created_at' => $this->created_at->toIso8601String(),
             'updated_at' => $this->updated_at->toIso8601String(),

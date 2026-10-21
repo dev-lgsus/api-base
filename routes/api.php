@@ -34,22 +34,24 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->group(function () {
 });
 
 // Grupo 1: Solo admin — gestión de usuarios, roles y auditoría
-Route::middleware(['auth:sanctum', 'throttle:api', 'role:admin|gerente|servicio_al_cliente|cajero', 'audit'])->group(function () {
+// (BUG-03) Antes admitía admin|gerente|servicio_al_cliente|cajero. Ahora sólo admin,
+// igual que el portal, y cada operación de usuarios exige además su permiso (BUG-10).
+Route::middleware(['auth:sanctum', 'throttle:api', 'role:admin', 'audit'])->group(function () {
     Route::prefix('users')->group(function () {
-        Route::get('/',        [ProfileController::class, 'index'])->name('users.index');
-        Route::post('/',       [ProfileController::class, 'store'])->name('users.store');
-        Route::get('{id}',     [ProfileController::class, 'showById'])->name('users.show');
-        Route::put('{id}',     [ProfileController::class, 'updateById'])->name('users.updateById');
-        Route::delete('{id}',  [ProfileController::class, 'destroy'])->name('users.delete');
+        Route::get('/',        [ProfileController::class, 'index'])->middleware('permission:users.index')->name('users.index');
+        Route::post('/',       [ProfileController::class, 'store'])->middleware('permission:users.update')->name('users.store');
+        Route::get('{id}',     [ProfileController::class, 'showById'])->middleware('permission:users.show')->whereNumber('id')->name('users.show');
+        Route::put('{id}',     [ProfileController::class, 'updateById'])->middleware('permission:users.update')->whereNumber('id')->name('users.updateById');
+        Route::delete('{id}',  [ProfileController::class, 'destroy'])->middleware('permission:users.delete')->whereNumber('id')->name('users.delete');
     });
 
     Route::prefix('roles')->group(function () {
         Route::get('/',        [RoleController::class, 'index'])->name('roles.index');
         Route::get('/all',     [RoleController::class, 'indexAll'])->name('roles.indexAll');
         Route::post('/',       [RoleController::class, 'store'])->name('roles.store');
-        Route::get('{id}',     [RoleController::class, 'show'])->name('roles.show');
-        Route::put('{id}',     [RoleController::class, 'update'])->name('roles.update');
-        Route::delete('{id}',  [RoleController::class, 'destroy'])->name('roles.destroy');
+        Route::get('{id}',     [RoleController::class, 'show'])->whereNumber('id')->name('roles.show');
+        Route::put('{id}',     [RoleController::class, 'update'])->whereNumber('id')->name('roles.update');
+        Route::delete('{id}',  [RoleController::class, 'destroy'])->whereNumber('id')->name('roles.destroy');
     });
 
     Route::prefix('auditoria')->group(function () {
@@ -117,6 +119,9 @@ Route::middleware(['auth:sanctum', 'throttle:api', 'role:admin|gerente|servicio_
         Route::get('/',        [TicketController::class, 'index'])->name('tickets.index');
         Route::get('/all',     [TicketController::class, 'indexAll'])->name('tickets.indexAll');
         Route::get('/filter',  [TicketController::class, 'filter'])->name('tickets.filter');
+        // Usuarios que pueden recibir un ticket: reemplaza el uso de GET /users desde
+        // atención al cliente, que tras BUG-03 queda reservado al administrador.
+        Route::get('/usuarios-asignables', [ProfileController::class, 'asignables'])->name('tickets.asignables');
         Route::get('/cliente/{clienteId}', [TicketController::class, 'getByCliente'])->name('tickets.byCliente');
         Route::post('/',       [TicketController::class, 'store'])->name('tickets.store');
         Route::get('{id}',     [TicketController::class, 'show'])->name('tickets.show');
@@ -129,12 +134,14 @@ Route::middleware(['auth:sanctum', 'throttle:api', 'role:admin|gerente|servicio_
     });
 });
 
-// Cuentas search — accesible por rol banco y admin (via permiso)
-Route::middleware(['auth:sanctum', 'throttle:api'])
+// (BUG-02) Rutas consumidas por las entidades externas. Antes sólo exigían token:
+// cualquier sesión, incluso sin rol, acreditaba dinero y enumeraba cuentas sin bitácora.
+// Ahora exigen el permiso correspondiente (rol banco o admin). El POST queda auditado; el
+// GET no, porque el middleware audit sólo registra métodos que modifican estado.
+Route::middleware(['auth:sanctum', 'throttle:api', 'permission:cuentas.search', 'audit'])
     ->get('/cuentas/search/{numero_cuenta}', [CuentaController::class, 'searchAccount'])
     ->name('cuentas.search');
 
-// Transferencias externas POST — accesible por rol banco y admin (via permiso)
-Route::middleware(['auth:sanctum', 'throttle:api'])
+Route::middleware(['auth:sanctum', 'throttle:api', 'permission:transferencias-externas.store', 'audit'])
     ->post('/transferencias-externas', [TransferenciaExternaController::class, 'store'])
     ->name('transferencias-externas.store');

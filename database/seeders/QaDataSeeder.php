@@ -44,12 +44,13 @@ class QaDataSeeder extends Seeder
         }
 
         // ------------------------------------------------- roles (los 6 perfiles + 3 de frontera)
+        // Entrega 3 (BUG-10): mismos permisos por rol que RolesAndPermissionsSeeder.
         $roles = [
             ['name' => 'admin', 'permissions' => ['users.index', 'users.show', 'users.update', 'users.delete', 'transferencias-externas.store', 'cuentas.search']],
-            ['name' => 'gerente', 'permissions' => ['users.index', 'users.show', 'users.update', 'users.delete', 'transferencias-externas.store', 'cuentas.search']],
-            ['name' => 'cajero', 'permissions' => ['users.index', 'users.show', 'users.update', 'users.delete', 'transferencias-externas.store', 'cuentas.search']],
-            ['name' => 'servicio_al_cliente', 'permissions' => ['users.index', 'users.show', 'users.update', 'users.delete', 'transferencias-externas.store', 'cuentas.search']],
-            ['name' => 'banco', 'permissions' => ['users.index', 'users.show', 'users.update', 'users.delete', 'transferencias-externas.store', 'cuentas.search']],
+            ['name' => 'gerente', 'permissions' => []],
+            ['name' => 'cajero', 'permissions' => []],
+            ['name' => 'servicio_al_cliente', 'permissions' => []],
+            ['name' => 'banco', 'permissions' => ['transferencias-externas.store', 'cuentas.search']],
             ['name' => 'rol_vacio', 'permissions' => []],
             ['name' => 'rol_uno', 'permissions' => []],
             ['name' => 'rol_borrado', 'permissions' => []],

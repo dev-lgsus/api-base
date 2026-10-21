@@ -26,6 +26,9 @@
         <env name="DB_CONNECTION" value="sqlite"/>
         <env name="DB_DATABASE" value=":memory:"/>
         <env name="DB_URL" value=""/>
+        <!-- Las pruebas nunca deben tocar la bitácora real (Atlas en .env): puerto local cerrado. -->
+        <env name="MONGO_DSN" value="mongodb://127.0.0.1:1/erpti_audit_test" force="true"/>
+        <env name="MONGO_DATABASE" value="erpti_audit_test" force="true"/>
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>

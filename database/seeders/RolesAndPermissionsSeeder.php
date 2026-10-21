@@ -31,20 +31,19 @@ class RolesAndPermissionsSeeder extends Seeder
             Permission::firstOrCreate(['name' => $permission]);
         }
 
-        // Crear rol admin con todos los permisos
-        $admin = Role::firstOrCreate(['name' => 'admin']);
-        $admin->syncPermissions($permissions);
+        // (BUG-10) Antes los cinco roles recibían los seis permisos y el modelo no gobernaba
+        // nada. Ahora cada rol recibe sólo lo que usa y las rutas lo exigen con permission:.
+        // Los demás módulos siguen gobernados por role: en routes/api.php.
+        $porRol = [
+            'admin'               => $permissions,
+            'banco'               => ['transferencias-externas.store', 'cuentas.search'],
+            'gerente'             => [],
+            'cajero'              => [],
+            'servicio_al_cliente' => [],
+        ];
 
-        $cajero = Role::firstOrCreate(['name' => 'cajero']);
-        $cajero->syncPermissions($permissions);
-
-        $servicioAlCliente = Role::firstOrCreate(['name' => 'servicio_al_cliente']);
-        $servicioAlCliente->syncPermissions($permissions);
-
-        $gerente = Role::firstOrCreate(['name' => 'gerente']);
-        $gerente->syncPermissions($permissions);
-
-        $banco = Role::firstOrCreate(['name' => 'banco']);
-        $banco->syncPermissions($permissions);
+        foreach ($porRol as $rol => $permisosDelRol) {
+            Role::firstOrCreate(['name' => $rol])->syncPermissions($permisosDelRol);
+        }
     }
 }

@@ -49,6 +49,9 @@ return [
 
     'expiration' => 480, // 8 hours
 
+    // Duración máxima absoluta de una sesión encadenando renovaciones (BUG-13), en minutos.
+    'max_session' => (int) env('SANCTUM_MAX_SESSION', 720), // 12 horas
+
     /*
     |--------------------------------------------------------------------------
     | Token Prefix
